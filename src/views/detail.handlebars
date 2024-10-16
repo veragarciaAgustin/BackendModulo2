@@ -1,0 +1,19 @@
+<h1>Detalle del producto</h1>
+
+{{>menu}}
+
+<h2>{{ this.model }}</h2>
+
+<p>Marca: {{ this.brand }}</p>
+<p>Modelo: {{ this.model }}</p>
+<p>Color: {{ this.colour }}</p>
+<p>Precio: {{ this.price }}</p>
+<p>Almacenamiento: {{ this.storage }}</p>
+<p>Descripción: {{ this.description }}</p>
+
+
+
+{{!-- Agregar al carrito --}}
+<form action="/api/products/{{this._id}}/cart" method="post">
+    <button type="submit">Agregar al carrito</button>
+</form>

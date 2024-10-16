@@ -1,0 +1,50 @@
+<h1>Productos</h1>
+
+<h2>Bienvenido {{usuario.nombre}}</h2>
+
+{{>menu}}
+
+<div class="page-info"></div>
+    <p>Mostrando {{payload.length}} productos de un total de {{totalDocs}}</p>
+
+    <form action="/" method="get">
+    <input type="text" name="query" placeholder="Buscar producto...">
+    <button type="submit" name="submit" value="search">Buscar</button>
+    </form>
+    
+    
+</form>
+<div class="sort-options">
+    <a href="/">Limpiar</a>
+    <br>
+    <a href="/?sort=brand">Ordenar por marca ascendente</a>
+    <a href="/?sort=brand-1">Ordenar por marca descendente</a>
+    <br>
+    <a href="/?sort=price">Ordenar por precio ascendente</a>
+    <a href="/?sort=price-1">Ordenar por precio descendente</a>
+</div>
+{{#each payload}}
+    <div>
+        <h2>{{ this.model }}</h2>
+        <h4>Marca: {{ this.brand }}</h4>
+        <p>Color: {{ this.colour }}</p>
+        <p>Precio: {{ this.price }}</p>
+
+        {{!-- Agregar al carrito --}}
+        <form action="/api/products/{{this._id}}/cart" method="post">
+            <button type="submit">Agregar al carrito</button>
+        </form>
+        {{!-- Vista de detalle --}}
+        <button><a href="/product/{{this._id}}">Ver detalle</a></button>
+    </div>
+{{/each}}
+
+<div class="pagination">
+    {{#if prevLink}}
+        <a href="{{prevLink}}">Anterior</a>
+    {{/if}}
+    {{#if nextLink}}
+        <a href="{{nextLink}}">Siguiente</a>
+    {{/if}}
+    <span>Página {{page}} de {{totalPages}}</span>
+</div>

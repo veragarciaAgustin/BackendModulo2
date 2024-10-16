@@ -1,0 +1,23 @@
+<h1>Carritos</h1>
+
+{{>menu}}
+
+{{#each carts}}
+  <div class="cart">
+    <h2>Carrito ID: {{this._id}}</h2>
+    <h3>Productos:</h3>
+    <ul>
+      {{#each this.products}}
+        <li>
+          Producto: <p>{{this.model}}</p>
+          Precio: <p>{{this.price}}</p>
+          Cantidad: <p>{{this.quantity}}</p>
+        </li>
+      {{else}}
+        <li>No hay productos en este carrito</li>
+      {{/each}}
+    </ul>
+  </div>
+{{else}}
+  <p>No hay carritos disponibles.</p>
+{{/each}}
