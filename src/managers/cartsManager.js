@@ -1,17 +1,26 @@
 import { cartModel } from "../models/cartsModel.js";
 import { productModel } from "../models/productsModel.js";
+import procesaErrores from "../utils.js";
 
 export default class Carts {
   constructor() {}
 
   getAll = async () => {
-    const carritos = await cartModel.find().lean();
-    return {success : true, payload : carritos};
-  };
+    try {
+      const carritos = await cartModel.find().lean();
+      return { success: true, payload: carritos };
+    } catch (error) {
+      throw new Error("Error al obtener los carritos");
+    }
+  }
 
   getById = async (id) => {
-    const carrito = await cartModel.findById(id);
-    return {success : true, payload : carrito};
+    try {
+      const carrito = await cartModel.findById(id);
+      return {success : true, payload : carrito};
+    } catch (error) {
+      procesaErrores(res, error);
+    }
   };
 
   updateCart = async (id, cart) => {
@@ -19,7 +28,7 @@ export default class Carts {
       const updatedCart = await cartModel.findByIdAndUpdate(id, cart);
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -28,41 +37,33 @@ export default class Carts {
       const deletedCart = await cartModel.findByIdAndDelete(id);
       return {success : true, payload : deletedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
   //Anadir producto al carrito
-  addProductToCart = async (cartId, productId, quantity) => {
+  async addProductToCart(cartId, productId) {
     try {
-      // Primero, obtén el producto para acceder a su modelo y precio
-      const product = await productModel.findById(productId);
-      
-      if (!product) {
-        throw new Error('Producto no encontrado');
+      const cart = await cartModel.findById('6702c3d03c39160c933ecc03');
+      if (!cart) {
+        throw new Error("Carrito no encontrado");
       }
 
-      const updatedCart = await cartModel.findByIdAndUpdate(
-        cartId,
-        {
-          $push: {
-            products: {
-              product: productId,
-              model: product.model,
-              price: product.price,
-              quantity: quantity
-            }
-          }
-        },
-        { new: true }
-      );
+      const productIndex = cart.products.findIndex(p => p.product.toString() === productId);
+      if (productIndex !== -1) {
+        // Si el producto ya está en el carrito, incrementa la cantidad
+        cart.products[productIndex].quantity += 1;
+      } else {
+        // Si el producto no está en el carrito, agrégalo
+        cart.products.push({ product: productId, quantity: 1 });
+      }
 
-      return { success: true, payload: updatedCart };
+      await cart.save();
+      return cart;
     } catch (error) {
-      console.error('Error al añadir producto al carrito:', error);
-      return { success: false, error: error.message };
+      throw new Error("Error al agregar el producto al carrito");
     }
-  };
+  }
 
 
   //Eliminar producto del carrito
@@ -75,7 +76,7 @@ export default class Carts {
       });
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -84,7 +85,7 @@ export default class Carts {
       const newCart = await cartModel.create(cart);
       return {success : true, payload : newCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -97,7 +98,7 @@ export default class Carts {
       });
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -106,7 +107,7 @@ export default class Carts {
       const updatedCart = await cartModel.findByIdAndUpdate(cartId, cartData);
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -119,7 +120,7 @@ export default class Carts {
       });
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -132,7 +133,7 @@ export default class Carts {
       });
       return {success : true, payload : updatedCart};
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 }

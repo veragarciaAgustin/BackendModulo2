@@ -1,98 +1,89 @@
 import { Router } from "express";
-import { UsuariosManagerMongo as UsuariosManager } from "../managers/usuariosManager.js";
+import passport from "passport";
+import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
-import { generaHash, validaHash } from "../utils.js";
+import procesaErrores from "../utils.js";
 
 const router = Router();
 
-router.post("/registro", async (req, res) => {
-  let { nombre, email, password } = req.body;
-  if (!nombre || !email || !password) {
-    res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: `Complete los datos...!!!` });
-  }
-
-  // validaciones x cuenta del alumno
-  try {
-    let existe = await UsuariosManager.getBy({ email });
-    if (existe) {
-      res.setHeader("Content-Type", "application/json");
-      return res
-        .status(400)
-        .json({ error: `Ya existe un usuario con email ${email}` });
-    }
-
-    password = generaHash(password);
-
-    let nuevoUsuario = await UsuariosManager.create({
-      nombre,
-      email,
-      password,
-    });
-
-    res.setHeader("Content-Type", "application/json");
-    res.status(201).json({ mensaje: "Registro exitoso", nuevoUsuario });
-  } catch (error) {
-    console.log(error);
-    res.setHeader("Content-Type", "application/json");
-    return res.status(500).json({
-      error: `Error inesperado en el servidor - Intente más tarde, o contacte a su administrador`,
-      detalle: `${error.message}`,
-    });
-  }
+router.get("/error", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  return res.status(401).json({ error: `Error al autenticar` });
 });
 
-router.post("/login", async (req, res) => {
-  let { email, password } = req.body;
-  if (!email || !password) {
-    res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: `Complete datos...!!!` });
+router.post(
+  "/registro",
+  passport.authenticate("registro", {session: false, failureRedirect: "/api/sessions/error" }),
+  async (req, res) => {
+    try {
+      //si sale bien el authenticate, passport deja un req.user con los datos del usuario
+      res.setHeader('Content-Type','application/json');
+      return res.status(201).json({payload: "Registro exitoso", nuevoUsuario: req.user})  
+      
+    } catch (error) {
+      procesaErrores(res, error);
+    }
   }
+);
 
-  try {
+router.post(
+  "/login",
+  passport.authenticate("login", {session: false, failureRedirect: "/api/sessions/error" }),
+  async (req, res) => {
+    let token = jwt.sign(req.user, config.SECRET, { expiresIn: "3600" });
     
-    let usuario = await UsuariosManager.getBy({ email });
-    if (!usuario) {
-      res.setHeader("Content-Type", "application/json");
-      return res.status(401).json({ error: `Credenciales inválidas` });
+    try {
+      res.cookie("tokenCookie", token, { httpOnly: true});
+      res.setHeader('Content-Type','application/json');
+      return res.status(201).json({payload: "Login exitoso", usuario: req.user})
+      
+    } catch (error) {
+      procesaErrores(res, error);
     }
-    if(!validaHash(password, usuario.password)){
-      res.setHeader("Content-Type", "application/json");
-      return res.status(401).json({ error: `Credenciales inválidas` });
-    }
-    delete usuario.password; // borrar datos sensibles
-
-    req.session.usuario = usuario;
-
-    res.setHeader("Content-Type", "application/json");
-    return res
-      .status(200)
-      .json({ mensaje: "Login exitoso", usuarioLogueado: usuario });
-  } catch (error) {
-    console.log(error);
-    res.setHeader("Content-Type", "application/json");
-    return res.status(500).json({
-      error: `Error inesperado en el servidor - Intente más tarde, o contacte a su administrador`,
-      detalle: `${error.message}`,
-    });
-  }
 });
+
+router.get('/github',
+  passport.authenticate('github', {}),
+);
+
+
+router.get("/callbackGithub",
+  passport.authenticate("github",{failureRedirect:"/api/sessions/error"}),
+  (req, res)=>{
+
+      
+      let token = jwt.sign(req.user, config.SECRET, { expiresIn: "3600" });
+      
+
+      try {
+        res.cookie("tokenCookie", token, { httpOnly: true });
+        res.setHeader('Content-Type','application/json');
+        return res.status(200).json({payload:"Login exitoso", usuarioLogueado: req.user});
+        
+        
+      } catch (error) {
+        procesaErrores(res, error);
+      }
+  }
+)
+
+
+/*Agregar al router /api/sessions/ la ruta /current, 
+la cual validará al usuario logueado y 
+devolverá en una respuesta sus datos (Asociados al JWT). */
+router.get("/current", passport.authenticate("current", {session: false}), (req, res) => {
+
+  let token = jwt.sign(req.user, config.SECRET, { expiresIn: "3600" });
+  res.cookie("tokenCookie", token, { httpOnly: true });
+  res.setHeader("Content-Type", "application/json");
+  return res.status(200).json({ payload: req.user });
+});
+
 
 router.get("/logout", (req, res) => {
-  let { web } = req.query;
-
-  req.session.destroy((error) => {
-    if (error) {
-      res.setHeader("Content-Type", "application/json");
-      return res.status(500).json({ error: `Error al realizar logout` });
-    }
-    if (web) {
-      return res.redirect("/login?mensaje=Logout exitoso");
-    } else {
-      res.setHeader("Content-Type", "application/json");
-      return res.status(200).json({ payload: "Logout exitoso...!!!" });
-    }
-  });
+  res.clearCookie("tokenCookie");
+  res.setHeader("Content-Type", "application/json");
+  return res.status(200).json({ payload: "Logout exitoso...!!!" });
 });
 
 export default router;

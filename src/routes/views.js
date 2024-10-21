@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     try {
         console.log('Intentando obtener productos...');
         const result = await productsManager.getAll(req.query);
-        console.log('Productos obtenidos:', result);
+        console.log('Productos obtenidos');
         res.render('products', { 
             ...result,
             limit: req.query.limit || 10,
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/carts', async (req, res) => {
+router.get('/carts', auth, async (req, res) => {
     try {
       const carts = await cartsManager.getAll();
       const flattenedCarts = carts.payload.map(cart => ({
@@ -39,7 +39,7 @@ router.get('/carts', async (req, res) => {
           quantity: item.quantity
         }))
       }));
-      res.render('carts', { carts: flattenedCarts }, {isLogin:req.session.usuario});
+      res.render('carts', { carts: flattenedCarts });
     } catch (error) {
       res.status(500).send("Error al obtener carritos");
       console.error("Error:", error);
@@ -63,21 +63,22 @@ router.get('/product/:id', async (req, res) => {
 
 router.get('/registro',(req,res)=>{
 
-  res.status(200).render('registro', {isLogin:req.session.usuario})
+  res.status(200).render('registro')
 })
 
 router.get('/login',(req,res)=>{
 
-  res.status(200).render('login', {isLogin:req.session.usuario})
+  res.status(200).render('login')
 })
 
 router.get('/perfil', auth, (req,res)=>{
 
-  let usuario=req.session.usuario
+  let usuario=req.user;
   res.status(200).render('perfil', {
-      usuario, isLogin:req.session.usuario
+      usuario
   })
 })
+
 
 
 

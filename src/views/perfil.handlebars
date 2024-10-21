@@ -1,5 +1,9 @@
-<h2>Perfil {{usuario.nombre}}</h2>
-<hr>
-<p>Correo electrónico: {{usuario.email}}</p>
-
+<h2>Perfil:</h2>
+<h3>Bienvenido {{usuario.nombre}}!</h3>
 {{>menu}}
+<hr>
+<p>Nombre completo: {{usuario.nombre}} {{usuario.apellido}}</p>
+<p>Edad: {{usuario.edad}}</p>
+<p>Correo electrónico: {{usuario.email}}</p>
+<p>Rol: {{usuario.rol}}</p>
+

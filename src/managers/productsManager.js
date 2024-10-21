@@ -1,4 +1,5 @@
 import { productModel } from "../models/productsModel.js";
+import procesaErrores from "../utils.js";
 
 export default class Products {
   constructor() {}
@@ -47,8 +48,7 @@ export default class Products {
         nextLink: result.hasNextPage ? `/?limit=${limit}&page=${result.nextPage}${sort ? `&sort=${sort}` : ''}${query ? `&query=${query}` : ''}` : null
       };
     } catch (error) {
-      console.error('Error en getAll:', error);
-      throw error;
+      procesaErrores(res, error);
     }
   };
 
@@ -62,7 +62,7 @@ export default class Products {
       const updatedProduct = await productModel.findByIdAndUpdate(id, product);
       return updatedProduct;
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -71,7 +71,7 @@ export default class Products {
       const deletedProduct = await productModel.findByIdAndDelete(id);
       return deletedProduct;
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 
@@ -80,7 +80,7 @@ export default class Products {
       const newProduct = await productModel.create(product);
       return newProduct;
     } catch (error) {
-      console.log(error);
+      procesaErrores(res, error);
     }
   };
 }

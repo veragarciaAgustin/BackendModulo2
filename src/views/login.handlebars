@@ -1,5 +1,6 @@
 <h2>Login usuarios</h2>
 <hr>
+{{>menu}}
 <form action="">
     <div id="mensajes"></div>
     <input type="email" id="email" name="email" placeholder="ingrese correo electrónico">
@@ -7,6 +8,9 @@
     <input type="submit" id="btnSubmit" value="Ingresar">
 </form>
 
-{{>menu}}
+<p>Github: <a href="/api/sessions/github">Login con Github</a></p>
+<p>No estas registrado? <a href="/registro">Registrate</a></p>
+
+
 
 <script src="/js/login.js"></script>

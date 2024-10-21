@@ -7,9 +7,7 @@
         <a href="/carts">Carritos</a>
     </li>
 
-    
-
-    {{#if isLogin}}
+    {{#if jwtToken}}
         <li>
             <a href="/perfil?web=1">Perfil</a>
         </li>
@@ -24,6 +22,4 @@
             <a href="/login">Login</a>
         </li>
     {{/if}}
-
-
 </ul>
