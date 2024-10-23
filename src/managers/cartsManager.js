@@ -44,9 +44,14 @@ export default class Carts {
   //Anadir producto al carrito
   async addProductToCart(cartId, productId) {
     try {
-      const cart = await cartModel.findById('6702c3d03c39160c933ecc03');
+      const cart = await cartModel.findById(cartId);
       if (!cart) {
         throw new Error("Carrito no encontrado");
+      }
+
+      const product = await productModel.findById(productId);
+      if (!product) {
+        throw new Error("Producto no encontrado");
       }
 
       const productIndex = cart.products.findIndex(p => p.product.toString() === productId);
@@ -54,12 +59,17 @@ export default class Carts {
         // Si el producto ya está en el carrito, incrementa la cantidad
         cart.products[productIndex].quantity += 1;
       } else {
-        // Si el producto no está en el carrito, agrégalo
-        cart.products.push({ product: productId, quantity: 1 });
+        // Si el producto no está en el carrito, agrégalo con la información del producto
+        cart.products.push({ 
+          product: productId, 
+          quantity: 1, 
+          model: product.model, 
+          price: product.price 
+        });
       }
 
       await cart.save();
-      return cart;
+      return { success: true, payload: cart };
     } catch (error) {
       throw new Error("Error al agregar el producto al carrito");
     }

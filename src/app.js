@@ -1,15 +1,13 @@
 //Express
 import express from "express";
 import path from "path";
-import sessions from "express-session";
 //Handlebars
 import handlebars from "express-handlebars";
 //Utils
 import __dirname from "./utils.js";
+import { passportCall } from "./utils.js";
 //CookieParser
 import cookieParser from "cookie-parser";
-//Auth
-import { auth } from "./middleware/auth.js";
 //Routes
 import productsRouter from "./routes/products.js";
 import cartsRouter from "./routes/carts.js";
@@ -26,6 +24,9 @@ import MongoStore from "connect-mongo";
 //Passport
 import passport from "passport";
 import { initPassport } from "./config/passport.config.js";
+//Auth
+import { auth } from "./middleware/auth.js";
+
 
 const port = config.PORT;
 const app = express();
@@ -51,7 +52,7 @@ app.use(passport.initialize());
 
 //Routes
 app.use("/api/products", productsRouter);
-app.use("/carts", passport.authenticate("current", {session: false}), cartsRouter);
+app.use("/carts", /*passportCall("current")*/ cartsRouter);
 app.use("/api/sessions", sessionsRouter);
 app.use("/", viewsRouter);
 
@@ -65,7 +66,7 @@ const environment = async () => {
   try {
     await mongoose.connect(
       "mongodb+srv://agusvera:Agus1234@mycluster.6nf1g.mongodb.net/productos",
-      { maxPoolSize: 30 }
+      {useNewUrlParser:true, useUnifiedTopology:true, maxPoolSize: 30 }
     );
     console.log("Connected to MongoDB");
   } catch (error) {

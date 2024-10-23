@@ -66,12 +66,12 @@ router.get('/registro',(req,res)=>{
   res.status(200).render('registro')
 })
 
-router.get('/login',(req,res)=>{
+router.get('/login', (req,res)=>{
 
   res.status(200).render('login')
 })
 
-router.get('/perfil', auth, (req,res)=>{
+router.get('/perfil', (req,res)=>{
 
   let usuario=req.user;
   res.status(200).render('perfil', {

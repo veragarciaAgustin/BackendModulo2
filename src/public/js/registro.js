@@ -13,7 +13,7 @@ btnSubmit.addEventListener("click", async(e)=>{
     let email=inputEmail.value
     let edad=inputEdad.value
     let password=inputPassword.value 
-    if(!nombre || !email || !password || !edad || !apellido){
+    if(!email || !password || !edad || !apellido){
         alert("Complete los datos")
         return 
     }

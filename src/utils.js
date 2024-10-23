@@ -4,6 +4,7 @@ import multer from 'multer';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from './config/config.js';
+import passport from 'passport';
 
 //__dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -41,3 +42,18 @@ export const uploader = multer({ storage, onError:function(error, next){
     console.log(error)
     next()
 }})
+
+//passport errors
+export const passportCall = estrategia => function (req, res, next) {
+    passport.authenticate(estrategia, function (error, user, info, status) {
+        if (error) {
+            return next(error); // Llama a next con el error
+        }
+        if (!user) {
+            res.setHeader('Content-Type', 'application/json');
+            return res.status(401).json({ error: `${info.message ? info.message : info.toString()}` });
+        }
+        req.user = user;
+        return next(); // Llama a next sin argumentos si no hay error
+    })(req, res, next);
+}

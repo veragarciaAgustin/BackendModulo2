@@ -7,7 +7,7 @@ import { generaHash, procesaErrores, validaHash } from "../utils.js";
 import { config } from "./config.js";
 import jwt from "jsonwebtoken";
 
-const buscarToken = (req) => {
+const buscarToken = req => {
   let token = null;
   if (req.cookies.tokenCookie) {
     console.log(`passport recibe token...!!!`)
@@ -30,16 +30,16 @@ export const initPassport = () => {
       },
       async (req, username, password, done) => {
         try {
-          let { nombre, apellido, edad } = req.body;
+          let { nombre, apellido, edad, rol } = req.body;
           if (!nombre) {
 
-            return done(null, false);
+            return done(null, false, { message: "El nombre es requerido" });
           }
 
           let existe = await usuariosManager.getBy({ email: username });
 
           if (existe) {
-            return done(null, false);
+            return done(null, false, { message: "El usuario ya existe" });
           }
 
           password = generaHash(password);
@@ -50,7 +50,7 @@ export const initPassport = () => {
             edad,
             email: username,
             password,
-            rol: "usuario",
+            rol: rol || "usuario",
           });
           return done(null, nuevoUsuario);
         } catch (error) {

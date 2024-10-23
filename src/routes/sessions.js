@@ -3,6 +3,7 @@ import passport from "passport";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
 import procesaErrores from "../utils.js";
+import { passportCall } from "../utils.js";
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.get("/error", (req, res) => {
 
 router.post(
   "/registro",
-  passport.authenticate("registro", {session: false, failureRedirect: "/api/sessions/error" }),
+  passport.authenticate("registro", { session: false, failureRedirect: "/api/sessions/error" }),
   async (req, res) => {
     try {
       //si sale bien el authenticate, passport deja un req.user con los datos del usuario
@@ -28,7 +29,7 @@ router.post(
 
 router.post(
   "/login",
-  passport.authenticate("login", {session: false, failureRedirect: "/api/sessions/error" }),
+  passport.authenticate("login", { session: false, failureRedirect: "/api/sessions/error" }),
   async (req, res) => {
     let token = jwt.sign(req.user, config.SECRET, { expiresIn: "3600" });
     
@@ -75,6 +76,11 @@ router.get("/current", passport.authenticate("current", {session: false}), (req,
 
   let token = jwt.sign(req.user, config.SECRET, { expiresIn: "3600" });
   res.cookie("tokenCookie", token, { httpOnly: true });
+  res.setHeader("Content-Type", "application/json");
+  return res.status(200).json({ payload: req.user });
+});
+
+router.get("/perfil", passportCall("jwt", {session: false}), (req, res) => {
   res.setHeader("Content-Type", "application/json");
   return res.status(200).json({ payload: req.user });
 });

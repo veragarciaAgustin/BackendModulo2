@@ -13,7 +13,9 @@ export const usuariosModel = mongoose.model(
       edad: Number,
       password: String,
       cartId: String,
-      rol: String,
+      rol: {
+        type: String,
+        default: "usuario"}
     },
     {
       timestamps: true,
